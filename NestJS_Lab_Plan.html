@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NestJS Lab — Helpdesk API с нуля</title>
+
+<style>
+  :root { --red: #be185d; --red-dark: #831843; --red-light: #fdf1f6; --red-mid: #f2b6cf; --ink: #1c1c1c; }
+  body { font-family: 'DejaVu Sans', 'Segoe UI', Arial, sans-serif; font-size: 14px; line-height: 1.6; color: var(--ink); }
+  h1 { font-size: 28px; color: var(--red); margin-bottom: 4px; }
+  .subtitle { font-size: 15px; color: #555; margin-top: 0; margin-bottom: 18px; }
+  h2 { font-size: 21px; color: var(--red-dark); border-bottom: 3px solid var(--red-mid); padding-bottom: 4px; margin-top: 44px; }
+  h3 { font-size: 16px; color: #333; margin-top: 24px; margin-bottom: 6px; }
+  h4 { font-size: 14px; color: #555; margin-top: 16px; margin-bottom: 4px; }
+  p { margin: 7px 0; }
+  code { background: #f3f6fa; padding: 1px 5px; border-radius: 3px; font-family: 'DejaVu Sans Mono', Menlo, Consolas, monospace; font-size: 12.5px; }
+  pre { background: #f7fafd; border: 1px solid #d8e4f2; border-left: 4px solid var(--red); border-radius: 4px; padding: 10px 12px; font-family: 'DejaVu Sans Mono', Menlo, Consolas, monospace; font-size: 12px; line-height: 1.4; white-space: pre-wrap; word-wrap: break-word; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 16px 0; font-size: 12.5px; }
+  th, td { border: 1px solid #ddd; padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--red-light); color: var(--red-dark); }
+  tr:nth-child(even) td { background: #fafafa; }
+  ul, ol { margin: 4px 0 10px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  .tag { display: inline-block; color: #fff; font-size: 11px; font-weight: bold; padding: 1px 8px; border-radius: 3px; margin-bottom: 5px; }
+  .insight-box { background: var(--red-light); border: 1px solid var(--red-mid); border-left: 5px solid var(--red); border-radius: 4px; padding: 8px 14px; margin: 12px 0; }
+  .insight-box .tag { background: var(--red); }
+  .fix-box { background: #f1faf3; border: 1px solid #bfe4c7; border-left: 5px solid #2f9e4a; border-radius: 4px; padding: 8px 14px; margin: 6px 0 14px 0; }
+  .fix-box .tag { background: #2f9e4a; }
+  .note-box { background: #f4f4f6; border: 1px solid #d9d9e0; border-left: 5px solid #555a6e; border-radius: 4px; padding: 8px 14px; margin: 12px 0; }
+  .note-box .tag { background: #555a6e; }
+  .next-box { background: #fff8e6; border: 1px solid #f0dca0; border-left: 5px solid #e0a800; border-radius: 4px; padding: 8px 14px; margin: 14px 0 6px 0; font-size: 13px; }
+  .next-box .tag { background: #e0a800; color: #3a2a00; }
+  .toc { background: #fdf3f7; border: 1px solid #d8e4f2; border-radius: 6px; padding: 14px 20px; margin: 16px 0 24px 0; }
+  .glossary-item { margin: 0 0 10px 0; padding-left: 24px; text-indent: -24px; }
+  .glossary-item b { color: var(--red-dark); }
+  .step { margin: 22px 0 10px 0; }
+  .step-head { display: block; background: var(--red-dark); color: #fff; padding: 6px 12px; border-radius: 4px 4px 0 0; font-weight: bold; font-size: 14px; }
+  .step-head .num { display: inline-block; background: #fff; color: var(--red-dark); padding: 0 8px; border-radius: 3px; margin-right: 8px; font-size: 12.5px; }
+  .step-body { border: 1px solid var(--red-mid); border-top: none; border-radius: 0 0 4px 4px; padding: 10px 14px; }
+  .step-body pre { margin: 8px 0; }
+  .why { background: #fff8e6; border-left: 4px solid #e0a800; padding: 6px 12px; margin: 10px 0 4px 0; font-size: 13px; }
+  .why b { color: #8a6500; }
+  .session-banner { background: linear-gradient(90deg, var(--red-dark), var(--red)); color: #fff; padding: 10px 16px; border-radius: 6px; margin: 28px 0 12px 0; font-size: 17px; font-weight: bold; }
+  .session-banner span { font-weight: normal; font-size: 12px; opacity: 0.9; margin-left: 10px; }
+
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #fff; }
+  .layout { display: flex; align-items: flex-start; }
+  .sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; width: 300px; flex: 0 0 300px; background: var(--red-dark); color: #fff; padding: 52px 12px 16px 12px; box-sizing: border-box; font-size: 12.5px; transition: margin-left .2s; }
+  body.nav-collapsed .sidebar { margin-left: -300px; }
+  .sidebar .nav-title { font-size: 16px; font-weight: bold; color: #fff; margin-bottom: 8px; }
+  .sidebar ul { list-style: none; padding-left: 0; margin: 0; }
+  .sidebar li { margin: 1px 0; }
+  .sidebar a { color: #fff; text-decoration: none; display: block; padding: 4px 8px; border-radius: 4px; }
+  .sidebar a:hover { background: #fff; color: var(--red-dark); }
+  .sidebar .nav-steps { padding-left: 8px; border-left: 2px solid rgba(255,255,255,.4); margin: 4px 0 6px 8px; }
+  .sidebar .nav-steps a { font-size: 11.5px; color: #fbdcea; }
+  .sidebar .nav-steps a:hover { color: var(--red-dark); }
+  .sidebar .nav-session a { color: #fff; font-weight: bold; margin-top: 6px; background: rgba(255,255,255,.12); }
+  .sidebar a .mark { display: inline-block; width: 14px; color: #fff; font-weight: bold; }
+  .sidebar a.done { opacity: .75; }
+  .sidebar a.done .mark::before { content: '✓'; }
+  .sidebar .progress { margin: 6px 0 12px 0; }
+  .sidebar .bar { height: 8px; background: rgba(255,255,255,.25); border-radius: 4px; overflow: hidden; }
+  .sidebar .fill { height: 100%; width: 0; background: #fff; transition: width .3s; }
+  .sidebar .ptext { font-size: 11px; margin-top: 4px; color: #fbdcea; }
+  .sidebar .reset { margin-top: 16px; background: transparent; border: 1px solid rgba(255,255,255,.5); color: #fff; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+  .sidebar .reset:hover { background: #fff; color: var(--red-dark); }
+  #nav-toggle { position: fixed; top: 10px; left: 10px; z-index: 20; background: var(--red); color: #fff; border: none; border-radius: 6px; width: 38px; height: 34px; font-size: 20px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+  #nav-toggle:hover { background: var(--red-dark); }
+  main { flex: 1; max-width: 960px; padding: 24px 44px 90px 44px; box-sizing: border-box; min-width: 0; }
+  body.nav-collapsed main { padding-left: 64px; }
+  h2, .step, .glossary-item, .session-banner { scroll-margin-top: 16px; }
+  a { color: var(--red); }
+  a.anchor { color: #e07aa8; text-decoration: none; margin-left: 6px; font-weight: normal; font-size: 0.8em; opacity: 0; }
+  h2:hover a.anchor, .step-head:hover a.anchor { opacity: 1; }
+  .step-head a.anchor { color: #fff; float: right; }
+  .glossary-item:target, .step:target { outline: 2px solid var(--red); outline-offset: 4px; border-radius: 4px; }
+  h2:target { background: var(--red-light); }
+  .done-label { display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .done-label input { width: 18px; height: 18px; accent-color: var(--red); cursor: pointer; vertical-align: middle; }
+  .step-head .done-label input { accent-color: #fff; }
+  h2.is-done { color: #999; border-bottom-color: #ddd; }
+  .step.is-done .step-head { background: #9e9e9e; }
+  .step.is-done .step-body { border-color: #ddd; }
+  .totop { position: fixed; right: 24px; bottom: 24px; background: var(--red); color: #fff; text-decoration: none; padding: 8px 12px; border-radius: 20px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+  @media (max-width: 900px) { .sidebar { position: fixed; z-index: 10; } main { padding: 56px 16px 60px 16px; } body.nav-collapsed main { padding-left: 16px; } }
+  @media print { .sidebar, .totop, #nav-toggle, a.anchor, .done-label { display: none; } .layout { display: block; } main { max-width: none; padding: 0; } a { color: inherit; text-decoration: none; } }
+</style>
+</head>
+<body id="top">
+<button id="nav-toggle">✕</button>
+<div class="layout">
+<nav class="sidebar" id="sidebar">
+<div class="nav-title">🐈 NestJS Lab</div>
+<div class="progress"><div class="bar"><div class="fill" id="progress-fill"></div></div><div class="ptext" id="progress-text">0 / 0</div></div>
+<ul>
+<li><a href="#sec-0" data-key="sec-0"><span class="mark"></span>0. Зачем этот лаб и что дальше</a></li>
+<li><a href="#sec-1" data-key="sec-1"><span class="mark"></span>1. Декораторы и reflect-metadata под капотом</a></li>
+<li><a href="#sec-2" data-key="sec-2"><span class="mark"></span>2. Modules и Dependency Injection</a></li>
+<li><a href="#sec-3" data-key="sec-3"><span class="mark"></span>3. DTO, Pipes и валидация</a></li>
+<li><a href="#sec-4" data-key="sec-4"><span class="mark"></span>4. Prisma: схема, миграции, N+1</a></li>
+<li><a href="#sec-5" data-key="sec-5"><span class="mark"></span>5. Guards, JWT и refresh-токены</a></li>
+<li><a href="#sec-6" data-key="sec-6"><span class="mark"></span>6. WebSocket Gateway</a></li>
+<li><a href="#sec-7" data-key="sec-7"><span class="mark"></span>7. Тестирование в Nest</a></li>
+<li><a href="#sec-8" data-key="sec-8"><span class="mark"></span>8. Пошаговая сборка (6 сессий)</a>
+<ul class="nav-steps">
+<li class="nav-session"><a href="#session-1">Сессия 1</a></li>
+<li><a href="#step-1-1" data-key="step-1-1"><span class="mark"></span>1.1 Стенд и наивная версия</a></li>
+<li><a href="#step-1-2" data-key="step-1-2"><span class="mark"></span>1.2 Декораторы руками, без Nest</a></li>
+<li><a href="#step-1-3" data-key="step-1-3"><span class="mark"></span>1.3 Первый настоящий модуль</a></li>
+<li class="nav-session"><a href="#session-2">Сессия 2</a></li>
+<li><a href="#step-2-1" data-key="step-2-1"><span class="mark"></span>2.1 Scopes: singleton-ловушка</a></li>
+<li><a href="#step-2-2" data-key="step-2-2"><span class="mark"></span>2.2 useFactory и токены</a></li>
+<li><a href="#step-2-3" data-key="step-2-3"><span class="mark"></span>2.3 PrismaService</a></li>
+<li><a href="#step-2-4" data-key="step-2-4"><span class="mark"></span>2.4 N+1: измеряем, не декларируем</a></li>
+<li class="nav-session"><a href="#session-3">Сессия 3</a></li>
+<li><a href="#step-3-1" data-key="step-3-1"><span class="mark"></span>3.1 DTO и ValidationPipe</a></li>
+<li><a href="#step-3-2" data-key="step-3-2"><span class="mark"></span>3.2 Свой Pipe</a></li>
+<li><a href="#step-3-3" data-key="step-3-3"><span class="mark"></span>3.3 Exception filter</a></li>
+<li><a href="#step-3-4" data-key="step-3-4"><span class="mark"></span>3.4 CRUD тикетов и комментариев</a></li>
+<li class="nav-session"><a href="#session-4">Сессия 4</a></li>
+<li><a href="#step-4-1" data-key="step-4-1"><span class="mark"></span>4.1 JWT-стратегия и логин</a></li>
+<li><a href="#step-4-2" data-key="step-4-2"><span class="mark"></span>4.2 AuthGuard под капотом</a></li>
+<li><a href="#step-4-3" data-key="step-4-3"><span class="mark"></span>4.3 RolesGuard и свой декоратор</a></li>
+<li><a href="#step-4-4" data-key="step-4-4"><span class="mark"></span>4.4 Refresh-токены и ротация</a></li>
+<li class="nav-session"><a href="#session-5">Сессия 5</a></li>
+<li><a href="#step-5-1" data-key="step-5-1"><span class="mark"></span>5.1 Gateway и комнаты</a></li>
+<li><a href="#step-5-2" data-key="step-5-2"><span class="mark"></span>5.2 Эмит из сервиса, forwardRef</a></li>
+<li><a href="#step-5-3" data-key="step-5-3"><span class="mark"></span>5.3 Auth на handshake</a></li>
+<li class="nav-session"><a href="#session-6">Сессия 6</a></li>
+<li><a href="#step-6-1" data-key="step-6-1"><span class="mark"></span>6.1 Unit-тест с мок Prisma</a></li>
+<li><a href="#step-6-2" data-key="step-6-2"><span class="mark"></span>6.2 e2e-тест контроллера</a></li>
+<li><a href="#step-6-3" data-key="step-6-3"><span class="mark"></span>6.3 Production Hell</a></li>
+</ul>
+</li>
+<li><a href="#sec-9" data-key="sec-9"><span class="mark"></span>9. Чек-лист концепций</a></li>
+<li><a href="#sec-10" data-key="sec-10"><span class="mark"></span>10. Глоссарий терминов</a></li>
+<li><a href="#sec-11" data-key="sec-11"><span class="mark"></span>11. Вопросы для самопроверки</a></li>
+<li><a href="#sec-12" data-key="sec-12"><span class="mark"></span>12. Что дальше</a></li>
+</ul><button class="reset" id="reset-progress" title="Сбросить все галочки">Сбросить прогресс</button></nav>
+<main>
+
+<h1>🐈 NestJS Lab — Helpdesk API с нуля</h1>
+<p class="subtitle">В Vue Lab backend на NestJS был дан вам готовым: auth, tickets, comments, history,
+WebSocket-gateway — вы его запускали, но не строили. Этот лаб — тот же Helpdesk-домен (тикеты, роли agent/
+customer, live-обновления), только теперь вы собираете backend сами, слой за слоем, и на каждом шагу
+смотрите, что именно скрывает декоратор <code>@Injectable()</code>, когда вы его пишете не глядя.</p>
+
+<div class="toc">
+<b>Что нужно перед стартом:</b> базовый синтаксис TypeScript (классы, интерфейсы, типы — если это ощущается
+шатко, сессия 1 TypeScript-лабы закрывает ровно это до начала данного лаба); event loop и async/await из
+чистого JS-лабы (сессия 5); поверхностное знакомство с декораторами и Prisma по курсу — здесь оно
+становится глубоким, а не остаётся "я видел, но не понимаю, откуда это берётся".<br><br>
+<b>Домен:</b> Helpdesk — тикеты (open/in_progress/resolved/closed), комментарии, история изменений статуса,
+роли <code>agent</code>/<code>customer</code>, живые обновления по WebSocket. Тот же самый, что в Vue Lab —
+специально, чтобы в финале можно было сравнить "фронтенд без бэкенда" и "бэкенд без фронтенда" на одном
+домене.<br><br>
+<b>Стек:</b> NestJS 10 + TypeScript, Prisma + PostgreSQL 16, class-validator, Passport + JWT, @nestjs/websockets
+(Socket.IO), Jest + <code>@nestjs/testing</code>. Всё в Docker.</p>
+</div>
+
+<h2 id="sec-0"><label class="done-label"><input type="checkbox" class="done" data-key="sec-0"></label>0. Зачем этот лаб и что дальше <a class="anchor" href="#sec-0">#</a></h2>
+<p>Курс, который вы проходили, показал форму: <code>@Controller()</code>, <code>@Injectable()</code>,
+пара методов — и всё работает. Но "работает" и "понимаю, почему работает" — разные вещи, и именно второе
+этот лаб закрывает, на том самом домене, который вы уже видели собранным в Vue Lab.</p>
+<div class="note-box"><span class="tag">СЛЕДУЮЩИЙ ШАГ ПОСЛЕ ЭТОГО ЛАБА</span> Ровно на этом backend'е (раздел
+12 «Что дальше») будет построена отдельная GraphQL-лаба — тот же Helpdesk-домен, но REST-эндпоинты сессии 3
+заменятся на резолверы, и N+1 из раздела 4 всплывёт снова, только на новом уровне.</div>
+
+<h2 id="sec-1"><label class="done-label"><input type="checkbox" class="done" data-key="sec-1"></label>1. Декораторы и reflect-metadata под капотом <a class="anchor" href="#sec-1">#</a></h2>
+<h3>1.1 Декоратор — это просто функция</h3>
+<p>В курсе вы писали <code>@Injectable()</code> над классом, не задавая вопроса, что это вообще такое.
+Ответ прозаичен: декоратор — обычная функция, которую TypeScript вызывает во время выполнения модуля, передав
+ей класс (или его конструктор) как аргумент. <code>@Injectable()</code> ничего "не подключает" сам по себе —
+он лишь <b>прикрепляет метаданные</b> к классу через служебную функцию <code>Reflect.defineMetadata(ключ,
+значение, класс)</code> из пакета <code>reflect-metadata</code>.</p>
+<h3>1.2 Откуда Nest знает порядок аргументов конструктора</h3>
+<p>Когда в <code>tsconfig.json</code> включён <code>"emitDecoratorMetadata": true</code>, компилятор TypeScript
+сам, без единой строчки Nest, записывает в метаданные класса типы параметров конструктора — ключ
+<code>design:paramtypes</code>. Nest на старте приложения просто читает эту метадату через
+<code>Reflect.getMetadata('design:paramtypes', TicketsController)</code> и получает массив классов
+(<code>[TicketsService]</code>) — по нему и строит граф зависимостей.</p>
+<div class="insight-box"><span class="tag">ПРЯМАЯ ПАРАЛЛЕЛЬ С PHP-ЛАБОЙ</span> Это концептуально то же самое,
+что вы строили руками в PHP-лабе (сессия 6): DI-контейнер v2 там читал типы параметров конструктора через
+<code>ReflectionClass::getConstructor()->getParameters()</code> и сам создавал зависимости —
+autowiring. Nest делает ровно это, только источник информации о типах не PHP Reflection API, а
+TypeScript-компилятор, записавший её заранее в метаданные класса.</div>
+
+<h2 id="sec-2"><label class="done-label"><input type="checkbox" class="done" data-key="sec-2"></label>2. Modules и Dependency Injection <a class="anchor" href="#sec-2">#</a></h2>
+<h3>2.1 IoC-контейнер: кто на самом деле создаёт ваши классы</h3>
+<p>В "наивном" коде вы сами пишете <code>new TicketsService(new PrismaService())</code>. С DI это
+переворачивается: вы объявляете <i>что</i> вам нужно (в конструкторе), а <b>кто создаёт объект и в каком
+порядке</b> — решает Nest Injector при старте приложения, обходя граф зависимостей модулей.</p>
+<h3>2.2 Provider scopes: не все провайдеры — синглтоны молча</h3>
+<table>
+<tr><th>Scope</th><th>Когда создаётся экземпляр</th><th>Риск</th></tr>
+<tr><td><code>DEFAULT</code></td><td>один на всё приложение (singleton)</td><td>любое поле экземпляра — общее состояние между всеми запросами всех пользователей одновременно</td></tr>
+<tr><td><code>REQUEST</code></td><td>новый на каждый HTTP-запрос</td><td>дороже по памяти/времени; нужен, когда сервис хранит что-то специфичное для запроса (например, текущего пользователя)</td></tr>
+<tr><td><code>TRANSIENT</code></td><td>новый при каждом внедрении</td><td>реже нужен; полезен для сервисов без общего состояния, которые дёшево создавать заново</td></tr>
+</table>
+<div class="why"><b>Зачем это знать заранее:</b> DEFAULT-scope — это ровно тот же singleton-контейнер, что вы
+строили в PHP-лабе; если по привычке хранить в таком сервисе изменяемое поле (например,
+<code>currentUserId</code>), оно станет общим для вообще всех запросов сразу — гонка данных между
+пользователями, а не баг в одном запросе.</div>
+
+<h2 id="sec-3"><label class="done-label"><input type="checkbox" class="done" data-key="sec-3"></label>3. DTO, Pipes и валидация <a class="anchor" href="#sec-3">#</a></h2>
+<p>Pipe — это не "ещё одна прослойка ради моды", а прямой ответ на вопрос: тело запроса приходит как сырой
+JSON без гарантий типов — как убедиться, что <code>status</code> действительно один из четырёх допустимых
+значений, а не строка "лол", прежде чем это дойдёт до Prisma?</p>
+<pre><code>// create-ticket.dto.ts
+import { IsString, IsEnum, MinLength } from 'class-validator';
+
+export class CreateTicketDto {
+  @IsString()
+  @MinLength(5)
+  title: string;
+
+  @IsEnum(['open', 'in_progress', 'resolved', 'closed'])
+  status: string;
+}</code></pre>
+<div class="insight-box"><span class="tag">ПОД КАПОТОМ</span> Глобальный <code>ValidationPipe</code> делает две
+разные вещи сразу, и это стоит различать: <b>transform</b> — превращает голый JSON-объект в настоящий
+экземпляр класса <code>CreateTicketDto</code> (через <code>class-transformer</code>), и только после этого
+<b>validate</b> — прогоняет декораторы <code>class-validator</code> по этому экземпляру. Если запрос не
+проходит, Pipe сам бросает <code>BadRequestException</code> — до того, как код контроллера вообще начал
+выполняться.</div>
+
+<h2 id="sec-4"><label class="done-label"><input type="checkbox" class="done" data-key="sec-4"></label>4. Prisma: схема, миграции, N+1 <a class="anchor" href="#sec-4">#</a></h2>
+<pre><code>// schema.prisma
+model Ticket {
+  id        Int       @id @default(autoincrement())
+  title     String
+  status    String    @default("open")
+  comments  Comment[]
+  history   TicketHistory[]
+  createdAt DateTime  @default(now())
+}
+
+model Comment {
+  id       Int    @id @default(autoincrement())
+  text     String
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+  ticketId Int
+}</code></pre>
+<div class="insight-box"><span class="tag">ИЗМЕРИТЬ, А НЕ ДЕКЛАРИРОВАТЬ</span> Включите
+<code>log: ['query']</code> в конструкторе <code>PrismaClient</code> и выведите список тикетов с числом
+комментариев через <code>for...of</code> + отдельный <code>prisma.comment.count()</code> на каждый тикет.
+Посчитайте реальное число SQL-запросов в логе для 10 тикетов. Затем перепишите тот же список через
+<code>prisma.ticket.findMany({ include: { comments: true } })</code> и посчитайте снова.</div>
+<div class="why"><b>Зачем именно так:</b> это тот же N+1, что вы увидите в Laravel-лабе на Eloquent
+(<code>->comments</code> без <code>with()</code>) — механизм ORM другой, а болезнь и лечение (eager loading
+одним JOIN-запросом вместо N отдельных) — одна и та же.</div>
+
+<h2 id="sec-5"><label class="done-label"><input type="checkbox" class="done" data-key="sec-5"></label>5. Guards, JWT и refresh-токены <a class="anchor" href="#sec-5">#</a></h2>
+<h3>5.1 Guard — это не Middleware</h3>
+<p>Middleware в Express-стиле ничего не знает о контроллере и методе, к которому идёт запрос — только о самом
+HTTP-запросе. Guard выполняется позже, уже имея доступ к <code>ExecutionContext</code> — то есть знает, какой
+именно метод контроллера сейчас будет вызван, и какие метаданные (например, из <code>@Roles()</code>) на нём
+висят.</p>
+<pre><code>@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const required = this.reflector.get<string[]>('roles', context.getHandler());
+    if (!required) return true;
+    const { user } = context.switchToHttp().getRequest();
+    return required.includes(user.role);
+  }
+}</code></pre>
+<div class="insight-box"><span class="tag">СВЯЗЬ С РАЗДЕЛОМ 1</span> <code>@Roles('agent')</code> — это
+кастомный декоратор, который под капотом делает ровно то же самое, что <code>@Injectable()</code>:
+<code>SetMetadata('roles', ['agent'])</code>. <code>Reflector.get()</code> в Guard — это то же чтение
+метаданных через reflect-metadata, только не Nest сам их читает при старте, а ваш собственный код — на каждый
+запрос.</div>
+<h3>5.2 Access + refresh: зачем два токена, а не один</h3>
+<p>Один долгоживущий JWT — риск: украли токен, он рабочий до истечения. Схема с двумя токенами разводит
+время жизни: access token живёт минуты (в нём права/роль, его никто не хранит в БД — просто проверяют
+подпись), refresh token живёт дни и хранится в БД <b>в виде хэша</b>, чтобы его можно было единолично отозвать
+и чтобы каждое использование можно было ротировать (заменить на новый, старый инвалидировать).</p>
+
+<h2 id="sec-6"><label class="done-label"><input type="checkbox" class="done" data-key="sec-6"></label>6. WebSocket Gateway <a class="anchor" href="#sec-6">#</a></h2>
+<pre><code>@WebSocketGateway({ cors: true })
+export class TicketsGateway {
+  @WebSocketServer() server: Server;
+
+  @SubscribeMessage('joinTicket')
+  handleJoin(client: Socket, ticketId: number) {
+    client.join(`ticket:${ticketId}`);
+  }
+
+  notifyTicketUpdated(ticketId: number, payload: unknown) {
+    this.server.to(`ticket:${ticketId}`).emit('ticketUpdated', payload);
+  }
+}</code></pre>
+<div class="insight-box"><span class="tag">ЦИКЛИЧЕСКАЯ ЗАВИСИМОСТЬ</span> <code>TicketsService</code> должен
+вызывать <code>notifyTicketUpdated</code> после обновления в БД — то есть Gateway нужно внедрить в сервис. Но
+если Gateway, в свою очередь, когда-нибудь тоже попросит сервис в конструктор — получится цикл A→B→A, который
+Nest Injector не сможет разрешить напрямую. Решение — <code>forwardRef(() => TicketsGateway)</code>,
+отложенная ссылка, разрываемая в момент фактического использования, а не в момент построения графа.</div>
+
+<h2 id="sec-7"><label class="done-label"><input type="checkbox" class="done" data-key="sec-7"></label>7. Тестирование в Nest <a class="anchor" href="#sec-7">#</a></h2>
+<pre><code>const module = await Test.createTestingModule({
+  providers: [
+    TicketsService,
+    { provide: PrismaService, useValue: { ticket: { findMany: jest.fn() } } },
+  ],
+}).compile();</code></pre>
+<div class="why"><b>Зачем именно так:</b> <code>Test.createTestingModule</code> — это тот же Nest Injector, что
+собирает реальное приложение, только вы сами подменяете один провайдер (<code>useValue</code>) на заглушку —
+DI-контейнер даёт эту подмену "бесплатно", без единой строчки инфраструктуры для мокинга.</div>
+
+<h2 id="sec-8"><label class="done-label"><input type="checkbox" class="done" data-key="sec-8"></label>8. Пошаговая сборка проекта (6 сессий) <a class="anchor" href="#sec-8">#</a></h2>
+
+<div class="session-banner" id="session-1">Сессия 1 — Стенд и первый модуль <span>наивная версия → декораторы руками → Nest-модуль</span></div>
+
+<div class="step" id="step-1-1"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-1-1"></label><span class="num">Шаг 1.1</span>Стенд и наивная версия<a class="anchor" href="#step-1-1">#</a></span><div class="step-body">
+<pre><code>docker compose up -d   # postgres + adminer, как в остальных лабах
+npm i -g @nestjs/cli</code></pre>
+<pre><code>// naive: tickets.controller.ts — без Nest, без DI
+class TicketsController {
+  private service = new TicketsService(new PrismaService());
+  list() { return this.service.findAll(); }
+}</code></pre>
+<div class="insight-box"><span class="tag">ПОЧЕМУ ЭТО ПЛОХО</span> Замените в тесте <code>PrismaService</code>
+на заглушку — как это сделать, не трогая тело контроллера? Никак: конструктор жёстко зашит внутри. Держите
+этот вопрос в голове — раздел 7 покажет, как DI решает его без единой строчки инфраструктуры мокинга.</div>
+</div></div>
+
+<div class="step" id="step-1-2"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-1-2"></label><span class="num">Шаг 1.2</span>Декораторы руками, без Nest<a class="anchor" href="#step-1-2">#</a></span><div class="step-body">
+<pre><code>// experiment.ts — чистый TypeScript, Nest здесь вообще не участвует
+import 'reflect-metadata';
+
+function LogClass(target: Function) {
+  console.log('Класс задекорирован:', target.name);
+}
+
+@LogClass
+class Foo {}</code></pre>
+<pre><code>npx ts-node experiment.ts</code></pre>
+<div class="insight-box"><span class="tag">ЭКСПЕРИМЕНТ</span> Добавьте в <code>Foo</code> конструктор с
+параметром <code>constructor(bar: Bar) {}</code>, включите <code>emitDecoratorMetadata</code> в
+<code>tsconfig.json</code>, и прямо в декораторе выведите
+<code>Reflect.getMetadata('design:paramtypes', target)</code>. Убедитесь своими глазами, что это просто
+массив <code>[Bar]</code> — ровно то, что потом читает Nest, чтобы понять, кого создавать первым.</div>
+</div></div>
+
+<div class="step" id="step-1-3"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-1-3"></label><span class="num">Шаг 1.3</span>Первый настоящий модуль<a class="anchor" href="#step-1-3">#</a></span><div class="step-body">
+<pre><code>nest g module tickets
+nest g controller tickets
+nest g service tickets</code></pre>
+<pre><code>@Injectable()
+export class TicketsService {
+  findAll() { return []; }
+}
+
+@Controller('tickets')
+export class TicketsController {
+  constructor(private readonly ticketsService: TicketsService) {}
+
+  @Get()
+  list() { return this.ticketsService.findAll(); }
+}</code></pre>
+<div class="why"><b>Зачем:</b> сравните этот конструктор с "наивной" версией шага 1.1 — тело метода
+идентично, но теперь <code>TicketsService</code> нигде не создаётся руками: Nest Injector, увидев
+метаданные из шага 1.2, сам построил экземпляр и передал его сюда.</div>
+</div></div>
+
+<div class="session-banner" id="session-2">Сессия 2 — DI глубже и Prisma <span>scopes → кастомные провайдеры → schema → N+1</span></div>
+
+<div class="step" id="step-2-1"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-2-1"></label><span class="num">Шаг 2.1</span>Scopes: singleton-ловушка<a class="anchor" href="#step-2-1">#</a></span><div class="step-body">
+<pre><code>@Injectable()
+export class RequestContextService {
+  currentUserId?: number;   // намеренная ошибка для эксперимента
+}</code></pre>
+<div class="insight-box"><span class="tag">ПРЕДСКАЗАТЬ → ПРОВЕРИТЬ</span> Установите <code>currentUserId</code>
+в одном запросе (например, в middleware) и прочитайте его в обработчике другого, параллельного запроса
+(с помощью <code>autocannon</code> или пары одновременных <code>curl</code>). Правильно ли значение
+привязано к "своему" запросу, или видна гонка? Почините, добавив <code>@Injectable({ scope: Scope.REQUEST
+})</code>, и повторите эксперимент.</div>
+</div></div>
+
+<div class="step" id="step-2-2"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-2-2"></label><span class="num">Шаг 2.2</span>useFactory и токены<a class="anchor" href="#step-2-2">#</a></span><div class="step-body">
+<pre><code>export const APP_CONFIG = 'APP_CONFIG';
+
+@Module({
+  providers: [
+    { provide: APP_CONFIG, useFactory: () => ({ jwtTtl: '15m' }) },
+  ],
+  exports: [APP_CONFIG],
+})
+export class ConfigModule {}</code></pre>
+<div class="why"><b>Зачем токен-строка, а не класс:</b> DI по умолчанию ищет провайдер по типу класса — но
+конфиг это не класс, а простой объект, поэтому нужен явный идентификатор (токен), по которому Nest найдёт
+нужный провайдер в графе.</div>
+</div></div>
+
+<div class="step" id="step-2-3"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-2-3"></label><span class="num">Шаг 2.3</span>PrismaService<a class="anchor" href="#step-2-3">#</a></span><div class="step-body">
+<pre><code>@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  async onModuleInit() { await this.$connect(); }
+  async onModuleDestroy() { await this.$disconnect(); }
+}</code></pre>
+<div class="why"><b>Зачем lifecycle hooks:</b> подключение к БД должно открыться один раз при старте
+приложения и закрыться при остановке — <code>OnModuleInit</code>/<code>OnModuleDestroy</code> это ровно те
+точки в жизненном цикле, куда Nest сам подставит вызов, без ручного вызова где-то в <code>main.ts</code>.</div>
+</div></div>
+
+<div class="step" id="step-2-4"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-2-4"></label><span class="num">Шаг 2.4</span>N+1: измеряем, не декларируем<a class="anchor" href="#step-2-4">#</a></span><div class="step-body">
+<pre><code>// наивно — N+1
+const tickets = await prisma.ticket.findMany();
+for (const t of tickets) {
+  t.commentsCount = await prisma.comment.count({ where: { ticketId: t.id } });
+}</code></pre>
+<pre><code>// исправлено — один запрос
+const tickets = await prisma.ticket.findMany({
+  include: { _count: { select: { comments: true } } },
+});</code></pre>
+<div class="insight-box"><span class="tag">СМОТРИТЕ РАЗДЕЛ 4</span> Прогоните оба варианта с включённым
+<code>log: ['query']</code> и запишите реальное число запросов для 10 тикетов — раздел 4 объясняет, почему
+разница растёт линейно с числом тикетов.</div>
+</div></div>
+
+<div class="session-banner" id="session-3">Сессия 3 — DTO, Pipes и CRUD <span>валидация → свой Pipe → filter → полный CRUD</span></div>
+
+<div class="step" id="step-3-1"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-3-1"></label><span class="num">Шаг 3.1</span>DTO и ValidationPipe<a class="anchor" href="#step-3-1">#</a></span><div class="step-body">
+<pre><code>// main.ts
+app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));</code></pre>
+<div class="insight-box"><span class="tag">ПРЕДСКАЗАТЬ → ПРОВЕРИТЬ</span> Отправьте POST с лишним полем
+(например, <code>isAdmin: true</code>), которого нет в <code>CreateTicketDto</code>. С
+<code>whitelist: true</code> — молча отбросится или вернётся ошибка? А с <code>forbidNonWhitelisted: true</code>
+дополнительно?</div>
+</div></div>
+
+<div class="step" id="step-3-2"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-3-2"></label><span class="num">Шаг 3.2</span>Свой Pipe<a class="anchor" href="#step-3-2">#</a></span><div class="step-body">
+<pre><code>@Injectable()
+export class ParseTicketStatusPipe implements PipeTransform {
+  transform(value: string) {
+    const allowed = ['open', 'in_progress', 'resolved', 'closed'];
+    if (!allowed.includes(value)) {
+      throw new BadRequestException(`Недопустимый статус: ${value}`);
+    }
+    return value;
+  }
+}</code></pre>
+</div></div>
+
+<div class="step" id="step-3-3"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-3-3"></label><span class="num">Шаг 3.3</span>Exception filter<a class="anchor" href="#step-3-3">#</a></span><div class="step-body">
+<pre><code>@Catch(HttpException)
+export class HttpExceptionFilter implements ExceptionFilter {
+  catch(exception: HttpException, host: ArgumentsHost) {
+    const res = host.switchToHttp().getResponse();
+    res.status(exception.getStatus()).json({
+      error: exception.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}</code></pre>
+</div></div>
+
+<div class="step" id="step-3-4"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-3-4"></label><span class="num">Шаг 3.4</span>CRUD тикетов и комментариев<a class="anchor" href="#step-3-4">#</a></span><div class="step-body">
+<p>Соберите полный CRUD для <code>Ticket</code> и <code>Comment</code> (GET/POST/PATCH/DELETE), используя
+<code>PrismaService</code> из шага 2.3 и DTO из шага 3.1 — самостоятельно, по образцу шага 1.3.</p>
+</div></div>
+
+<div class="session-banner" id="session-4">Сессия 4 — Guards, Auth и JWT <span>login → AuthGuard → RolesGuard → refresh</span></div>
+
+<div class="step" id="step-4-1"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-4-1"></label><span class="num">Шаг 4.1</span>JWT-стратегия и логин<a class="anchor" href="#step-4-1">#</a></span><div class="step-body">
+<pre><code>@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET,
+    });
+  }
+  validate(payload: { sub: number; role: string }) {
+    return { userId: payload.sub, role: payload.role };
+  }
+}</code></pre>
+</div></div>
+
+<div class="step" id="step-4-2"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-4-2"></label><span class="num">Шаг 4.2</span>AuthGuard под капотом<a class="anchor" href="#step-4-2">#</a></span><div class="step-body">
+<pre><code>@UseGuards(AuthGuard('jwt'))
+@Get('me')
+me(@Req() req) { return req.user; }</code></pre>
+<div class="insight-box"><span class="tag">ПОД КАПОТОМ</span> <code>AuthGuard('jwt')</code> — обычный Guard,
+такой же, как <code>RolesGuard</code> из раздела 5: его <code>canActivate</code> вызывает
+<code>JwtStrategy.validate()</code>, и если она не бросила исключение — кладёт результат в
+<code>request.user</code>, откуда его потом читает и <code>RolesGuard</code>.</div>
+</div></div>
+
+<div class="step" id="step-4-3"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-4-3"></label><span class="num">Шаг 4.3</span>RolesGuard и свой декоратор<a class="anchor" href="#step-4-3">#</a></span><div class="step-body">
+<pre><code>export const Roles = (...roles: string[]) => SetMetadata('roles', roles);</code></pre>
+<pre><code>@Roles('agent')
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@Patch(':id/status')
+updateStatus() { /* ... */ }</code></pre>
+</div></div>
+
+<div class="step" id="step-4-4"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-4-4"></label><span class="num">Шаг 4.4</span>Refresh-токены и ротация<a class="anchor" href="#step-4-4">#</a></span><div class="step-body">
+<p>Реализуйте <code>POST /auth/refresh</code>: принимает refresh-токен, сверяет его хэш с сохранённым в БД
+(<code>bcrypt.compare</code>), при совпадении выдаёт новую пару access+refresh и <b>перезаписывает</b> хэш
+в БД — так, что старый refresh-токен становится бесполезен даже если его перехватили позже.</p>
+<div class="insight-box"><span class="tag">ЭКСПЕРИМЕНТ</span> Сохраните старый refresh-токен перед его
+использованием, обновитесь один раз, затем попробуйте использовать тот же старый токен повторно — он должен
+быть отклонён. Это и есть защита от replay-атаки через ротацию.</div>
+</div></div>
+
+<div class="session-banner" id="session-5">Сессия 5 — WebSocket Gateway <span>комнаты → эмит из сервиса → auth хендшейка</span></div>
+
+<div class="step" id="step-5-1"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-5-1"></label><span class="num">Шаг 5.1</span>Gateway и комнаты<a class="anchor" href="#step-5-1">#</a></span><div class="step-body">
+<p>Соберите <code>TicketsGateway</code> из раздела 6 и подключите фронтенд-заглушку (простая HTML-страница с
+<code>socket.io-client</code>), которая при открытии страницы тикета шлёт <code>joinTicket</code>.</p>
+</div></div>
+
+<div class="step" id="step-5-2"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-5-2"></label><span class="num">Шаг 5.2</span>Эмит из сервиса, forwardRef<a class="anchor" href="#step-5-2">#</a></span><div class="step-body">
+<pre><code>@Injectable()
+export class TicketsService {
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => TicketsGateway))
+    private gateway: TicketsGateway,
+  ) {}
+
+  async updateStatus(id: number, status: string) {
+    const ticket = await this.prisma.ticket.update({ where: { id }, data: { status } });
+    this.gateway.notifyTicketUpdated(id, ticket);
+    return ticket;
+  }
+}</code></pre>
+</div></div>
+
+<div class="step" id="step-5-3"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-5-3"></label><span class="num">Шаг 5.3</span>Auth на handshake<a class="anchor" href="#step-5-3">#</a></span><div class="step-body">
+<pre><code>handleConnection(client: Socket) {
+  const token = client.handshake.auth?.token;
+  try {
+    client.data.user = this.jwtService.verify(token);
+  } catch {
+    client.disconnect();
+  }
+}</code></pre>
+<div class="why"><b>Зачем:</b> WebSocket-соединение живёт дольше одного HTTP-запроса, поэтому JWT здесь
+проверяется один раз — в момент подключения, а не на каждое отдельное событие.</div>
+</div></div>
+
+<div class="session-banner" id="session-6">Сессия 6 — Тестирование <span>unit → e2e → Production Hell</span></div>
+
+<div class="step" id="step-6-1"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-6-1"></label><span class="num">Шаг 6.1</span>Unit-тест с мок Prisma<a class="anchor" href="#step-6-1">#</a></span><div class="step-body">
+<pre><code>it('возвращает список тикетов', async () => {
+  const module = await Test.createTestingModule({
+    providers: [
+      TicketsService,
+      { provide: PrismaService, useValue: { ticket: { findMany: jest.fn().mockResolvedValue([{ id: 1 }]) } } },
+    ],
+  }).compile();
+
+  const service = module.get(TicketsService);
+  expect(await service.findAll()).toEqual([{ id: 1 }]);
+});</code></pre>
+</div></div>
+
+<div class="step" id="step-6-2"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-6-2"></label><span class="num">Шаг 6.2</span>e2e-тест контроллера<a class="anchor" href="#step-6-2">#</a></span><div class="step-body">
+<pre><code>it('/tickets (GET)', () => {
+  return request(app.getHttpServer())
+    .get('/tickets')
+    .expect(200);
+});</code></pre>
+<div class="why"><b>Зачем отдельно от unit:</b> unit-тест шага 6.1 проверяет логику сервиса в изоляции; e2e
+поднимает реальное Nest-приложение целиком (модули, Pipes, Guards) и проверяет, что весь HTTP-слой
+действительно работает вместе, а не только по отдельности.</div>
+</div></div>
+
+<div class="step" id="step-6-3"><span class="step-head"><label class="done-label"><input type="checkbox" class="done" data-key="step-6-3"></label><span class="num">Шаг 6.3</span>Production Hell<a class="anchor" href="#step-6-3">#</a></span><div class="step-body">
+<div class="note-box"><span class="tag">БЕЗ ПОДСКАЗОК</span></div>
+<ul>
+<li>Уберите <code>@Injectable({ scope: Scope.REQUEST })</code> у сервиса, который его требует — какое
+исключение выбросит Nest при старте, и что оно означает?</li>
+<li>Забудьте зарегистрировать <code>RolesGuard</code> глобально или на конкретном роуте — какой запрос
+пройдёт, хотя не должен?</li>
+<li>Сломайте <code>forwardRef</code> в Gateway/Service — какую именно ошибку выбросит Nest Injector при
+старте приложения и что она означает буквально?</li>
+</ul>
+</div></div>
+
+<h2 id="sec-9"><label class="done-label"><input type="checkbox" class="done" data-key="sec-9"></label>9. Чек-лист концепций <a class="anchor" href="#sec-9">#</a></h2>
+<ul>
+<li>Декоратор — функция, вызванная при определении класса; сама по себе ничего не связывает.</li>
+<li><code>emitDecoratorMetadata</code> + <code>reflect-metadata</code> — то, откуда Nest реально знает типы
+параметров конструктора.</li>
+<li>Provider scopes — DEFAULT/REQUEST/TRANSIENT и риск общего состояния в singleton.</li>
+<li>useFactory/useValue/useClass — три способа подменить, что стоит за токеном провайдера.</li>
+<li>ValidationPipe: transform (class-transformer) и validate (class-validator) — два разных шага.</li>
+<li>Guard vs Middleware — доступ к <code>ExecutionContext</code> и метаданным хендлера.</li>
+<li>Access vs refresh токен — зачем два, а не один, и что такое ротация.</li>
+<li>forwardRef — как разрывается циклическая зависимость между сервисом и Gateway.</li>
+<li>Test.createTestingModule — тот же Injector, что и в реальном приложении, с подменой одного провайдера.</li>
+</ul>
+
+<h2 id="sec-10"><label class="done-label"><input type="checkbox" class="done" data-key="sec-10"></label>10. Глоссарий терминов <a class="anchor" href="#sec-10">#</a></h2>
+<p class="glossary-item"><b>Provider</b> — любой класс, помеченный <code>@Injectable()</code>, который Nest
+может создать и подставить в конструктор другого класса.</p>
+<p class="glossary-item"><b>Module</b> — группа связанных provider'ов и controller'ов с явно объявленными
+экспортами для других модулей.</p>
+<p class="glossary-item"><b>Scope</b> — правило, как часто создаётся новый экземпляр provider'а (DEFAULT/
+REQUEST/TRANSIENT).</p>
+<p class="glossary-item"><b>Pipe</b> — трансформация и/или валидация входных данных до того, как они попадут
+в тело метода контроллера.</p>
+<p class="glossary-item"><b>Guard</b> — проверка "можно ли выполнить этот конкретный обработчик", с доступом
+к метаданным хендлера.</p>
+<p class="glossary-item"><b>Interceptor</b> — код, оборачивающий вызов обработчика до и после (логирование,
+трансформация ответа).</p>
+<p class="glossary-item"><b>Exception filter</b> — единая точка форматирования ошибок API.</p>
+<p class="glossary-item"><b>Reflector</b> — сервис Nest для чтения метаданных, записанных
+<code>SetMetadata</code>/кастомными декораторами.</p>
+<p class="glossary-item"><b>forwardRef</b> — отложенная ссылка на класс, разрывающая циклическую зависимость
+при построении графа DI.</p>
+<p class="glossary-item"><b>Gateway</b> — класс, оборачивающий WebSocket-сервер в тот же
+модуль/DI-стиль, что и HTTP-контроллеры.</p>
+
+<h2 id="sec-11"><label class="done-label"><input type="checkbox" class="done" data-key="sec-11"></label>11. Вопросы для самопроверки / собеседования <a class="anchor" href="#sec-11">#</a></h2>
+<ul>
+<li>Как именно Nest узнаёт, какой класс подставить в конструктор другого класса — какой механизм TypeScript
+и какой пакет за этим стоит?</li>
+<li>Чем PROVIDER scope REQUEST отличается от DEFAULT, и какой класс ошибок он предотвращает?</li>
+<li>Чем Guard принципиально отличается от Middleware с точки зрения доступной ему информации?</li>
+<li>Зачем в схеме аутентификации два токена, а не один долгоживущий JWT?</li>
+<li>Что делает <code>forwardRef</code>, и в какой момент — при старте приложения или при каждом запросе —
+он разрешает зависимость?</li>
+<li>Чем e2e-тест отличается от unit-теста с точки зрения того, что реально поднимается при его запуске?</li>
+</ul>
+
+<h2 id="sec-12"><label class="done-label"><input type="checkbox" class="done" data-key="sec-12"></label>12. Что дальше <a class="anchor" href="#sec-12">#</a></h2>
+<table>
+<tr><th>Тема</th><th>Зачем после лабы</th></tr>
+<tr><td>GraphQL (следующая лаба)</td><td>тот же Helpdesk-backend, но REST-эндпоинты сессии 3 заменяются на резолверы; N+1 из раздела 4 возвращается на уровне резолверов и лечится через DataLoader</td></tr>
+<tr><td>Микросервисы (@nestjs/microservices)</td><td>тот же DI и модульность, но транспорт между сервисами — TCP/Redis/RabbitMQ вместо HTTP</td></tr>
+<tr><td>CQRS-модуль Nest</td><td>формализует то, что вы уже частично видели в RabbitMQ-лабе — разделение команд и запросов</td></tr>
+<tr><td>Swagger/OpenAPI (@nestjs/swagger)</td><td>автогенерация документации API прямо из DTO-классов, которые вы уже писали в разделе 3</td></tr>
+</table>
+
+<a href="#top" class="totop">↑ Наверх</a>
+</main>
+</div>
+
+<script>
+(function () {
+  var KEY = 'nest-lab-progress', NAVKEY = 'nest-lab-nav';
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+  var boxes = document.querySelectorAll('input.done');
+  function apply() {
+    var total = boxes.length, done = 0;
+    boxes.forEach(function (b) {
+      var k = b.dataset.key, on = !!state[k];
+      b.checked = on; if (on) done++;
+      var host = b.closest('.step') || b.closest('h2');
+      if (host) host.classList.toggle('is-done', on);
+      var nav = document.querySelector('.sidebar a[data-key="' + k + '"]');
+      if (nav) nav.classList.toggle('done', on);
+    });
+    document.getElementById('progress-fill').style.width = (total ? done / total * 100 : 0) + '%';
+    document.getElementById('progress-text').textContent = 'Пройдено: ' + done + ' / ' + total;
+  }
+  boxes.forEach(function (b) {
+    b.addEventListener('change', function () {
+      state[b.dataset.key] = b.checked;
+      localStorage.setItem(KEY, JSON.stringify(state));
+      apply();
+    });
+  });
+  document.getElementById('reset-progress').addEventListener('click', function () {
+    if (confirm('Сбросить все отметки?')) { state = {}; localStorage.removeItem(KEY); apply(); }
+  });
+  apply();
+
+  var toggle = document.getElementById('nav-toggle');
+  function setNav(collapsed) {
+    document.body.classList.toggle('nav-collapsed', collapsed);
+    localStorage.setItem(NAVKEY, collapsed ? '1' : '0');
+    toggle.textContent = collapsed ? '☰' : '✕';
+    toggle.title = collapsed ? 'Показать оглавление' : 'Скрыть оглавление';
+  }
+  toggle.addEventListener('click', function () { setNav(!document.body.classList.contains('nav-collapsed')); });
+  setNav(localStorage.getItem(NAVKEY) === '1' || window.innerWidth < 900);
+
+  document.querySelectorAll('.done-label').forEach(function (l) { l.addEventListener('click', function (e) { e.stopPropagation(); }); });
+})();
+</script>
+</body>
+</html>
