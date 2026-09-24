@@ -3,7 +3,7 @@
 ![NestJS](nest.png)
 
 **Статус: ⚪ методичка готова, прохождение впереди.**
-**Сложность: высокая.** Проект полностью самостоятельный — отдельный репозиторий, ничего не импортирует из других лаб. TypeScript-минимум, нужный для Nest (декораторы, generics, `satisfies`), объясняется по ходу в сессии 1. Домен — тот же Helpdesk, что и в Vue Lab (тикеты, роли `agent`/`customer`, live-обновления), поэтому тот фронтенд можно направить на этот бэкенд, но прохождение Vue Lab не требуется.
+**Сложность: высокая.** Проект полностью самостоятельный — отдельный репозиторий, ничего не импортирует из других лаб. TypeScript-минимум, нужный для Nest (декораторы, generics, `satisfies`), объясняется по ходу в сессии 1. Полное изучение NestJS с нуля как отдельной технологии: домен Helpdesk похож на Vue Lab только по смыслу (тикеты, роли `agent`/`customer`, live-обновления), прохождение Vue Lab не требуется.
 
 ## О чём
 
@@ -11,7 +11,7 @@ Helpdesk API собирается с нуля слой за слоем — и н
 
 ## Стек
 
-NestJS 11 + TypeScript (strict), Prisma 6 + PostgreSQL 16, class-validator/class-transformer, `@nestjs/passport` + `passport-jwt` + `@nestjs/jwt` + argon2, `@nestjs/event-emitter`, `@nestjs/websockets` (Socket.IO), `@nestjs/swagger`, helmet + `@nestjs/throttler`, `@nestjs/terminus`, Jest + supertest. Всё в Docker.
+NestJS 11 + TypeScript (strict), Prisma 6 + PostgreSQL 17, class-validator/class-transformer, `@nestjs/passport` + `passport-jwt` + `@nestjs/jwt` + argon2, `@nestjs/event-emitter`, `@nestjs/websockets` (Socket.IO), `@nestjs/swagger`, helmet + `@nestjs/throttler`, `@nestjs/terminus`, Jest + supertest. Всё в Docker.
 
 ## Формат
 

@@ -161,9 +161,9 @@
 <li class="nav-session"><a href="#session-5">Сессия 5</a></li>
 <li><a href="#step-9-1" data-key="step-9-1"><span class="mark"></span>9.1 Unit-тесты: сервис с моком Prisma и g…</a></li>
 <li><a href="#step-9-2" data-key="step-9-2"><span class="mark"></span>9.2 E2E: настоящая БД, настоящий HTTP — t…</a></li>
-<li><a href="#step-10-1" data-key="step-10-1"><span class="mark"></span>10.1 Свой динамический модуль — src/audit/</a></li>
-<li><a href="#step-10-2" data-key="step-10-2"><span class="mark"></span>10.2 Health-чеки, graceful shutdown и Doc…</a></li>
-<li><a href="#step-10-3" data-key="step-10-3"><span class="mark"></span>10.3 Production Hell — задания без подска…</a></li>
+<li><a href="#step-9-3" data-key="step-9-3"><span class="mark"></span>9.3 Свой динамический модуль — src/audit/</a></li>
+<li><a href="#step-9-4" data-key="step-9-4"><span class="mark"></span>9.4 Health-чеки, graceful shutdown и Doc…</a></li>
+<li><a href="#step-9-5" data-key="step-9-5"><span class="mark"></span>9.5 Production Hell — задания без подска…</a></li>
 </ul>
 </li>
 <li><a href="#sec-10" data-key="sec-10"><span class="mark"></span>10. Полный чек-лист концепций</a>
@@ -179,7 +179,7 @@
 
 <h1>🐈 NestJS Lab — Helpdesk API</h1>
 <p class="subtitle">Подробное руководство: от TypeScript-декораторов и собственного DI-контейнера до JWT с ротацией refresh-токенов, WebSocket-шлюза, e2e-тестов и Docker.
-Стек: NestJS 11 + TypeScript + Prisma 6 + PostgreSQL 16 + Socket.IO + Jest. Каждая тема — с блоком «Под капотом» и с подготовкой к следующей.
+Стек: NestJS 11 + TypeScript + Prisma 6 + PostgreSQL 17 + Socket.IO + Jest. Каждая тема — с блоком «Под капотом» и с подготовкой к следующей.
 Отмечайте пройденное галочками — прогресс сохраняется в браузере.</p>
 
 <div class="note-box">
@@ -288,7 +288,7 @@
 </div>
 <div class="note-box"><span class="tag">ПРО ПРЕДМЕТНУЮ ОБЛАСТЬ</span>
 <ul>
-<li><b>Helpdesk</b>: клиенты создают тикеты, агенты их разбирают, есть комментарии, внутренние заметки, история изменений и живые обновления. Предметная область та же, что у фронтенда из Vue Lab — поэтому API спроектирован так, чтобы тот фронтенд можно было направить на этот бэкенд.</li>
+<li><b>Helpdesk</b>: клиенты создают тикеты, агенты их разбирают, есть комментарии, внутренние заметки, история изменений и живые обновления. Это полное изучение NestJS с нуля как отдельной технологии, домен Helpdesk похож на Vue Lab только по смыслу.</li>
 <li><b>Проект полностью самостоятельный</b>: отдельный репозиторий, ничего не импортирует из других лаб. Общая только предметная область.</li>
 <li>Если вы пишете на Laravel — в тексте постоянно встречаются параллели «в Laravel это называется так-то». Раздел <a href="#sec-2">2.9</a> собирает их в одну таблицу.</li>
 </ul>
@@ -393,7 +393,7 @@ HTTP-ответ
 <tr><td><code>onApplicationShutdown(signal)</code></td><td>после закрытия HTTP-сервера</td><td>—</td></tr>
 </table>
 <p>Хуки завершения на <code>SIGTERM</code> срабатывают, только если вызван <code>app.enableShutdownHooks()</code> — по умолчанию Nest сигналы не слушает.
-Это проверяется в шаге <a href="#step-10-2">10.2</a>.</p>
+Это проверяется в шаге <a href="#step-9-4">9.4</a>.</p>
 
 <h3>2.9. Nest ↔ Laravel: словарь соответствий</h3>
 <table>
@@ -442,7 +442,7 @@ HTTP-ответ
 │   PrismaModule (@Global) · ConfigModule (@Global) · HealthModule (Terminus)              │
 └───────────────────────────────────────────┬───────────────────────────────────────────────┘
                                             ▼
-                             PostgreSQL 16:  helpdesk  ·  helpdesk_test
+                             PostgreSQL 17:  helpdesk  ·  helpdesk_test
 </pre>
 <table>
 <tr><th>Модуль</th><th>Ответственность</th><th>Экспортирует</th><th>Зависит от</th></tr>
@@ -462,7 +462,7 @@ HTTP-ответ
 А когда шлюзу понадобится <code>TicketPolicy</code> из <code>TicketsModule</code>, получится цикл модулей, который Nest разрешает только через <code>forwardRef()</code>.</p>
 <p>Решение — инверсия зависимости через события: <code>TicketsService</code> публикует факт «тикет обновлён» и ничего не знает о том, кто слушает.
 <code>RealtimeModule</code> и <code>AuditModule</code> зависят от <code>TicketsModule</code> (им нужны типы событий и политика), но не наоборот. Стрелки зависимостей идут в одну сторону —
-от инфраструктуры к домену. В шаге <a href="#step-10-3">10.3</a> одно из заданий — намеренно создать такой цикл и увидеть ошибку.</p>
+от инфраструктуры к домену. В шаге <a href="#step-9-5">9.5</a> одно из заданий — намеренно создать такой цикл и увидеть ошибку.</p>
 </div></details>
 <div class="next-box"><span class="tag">ПЕРЕД РАЗДЕЛОМ <a href="#sec-4">4</a></span><ul>
 <li>📖 Почитать: <a href="https://docs.nestjs.com/fundamentals/circular-dependency" target="_blank">NestJS → Circular dependency</a> — как выглядит цикл и почему <code>forwardRef</code> — крайняя мера.</li>
@@ -472,11 +472,11 @@ HTTP-ответ
 <h2 id="sec-4"><label class="done-label" title="Отметить раздел пройденным"><input type="checkbox" class="done" data-key="sec-4"></label>4. Технологический стек и структура проекта <a class="anchor" href="#sec-4">#</a></h2>
 <table>
 <tr><th>Компонент</th><th>Выбор</th><th>Зачем</th></tr>
-<tr><td>Runtime</td><td>Node.js 22 LTS</td><td>текущая LTS; встроенные <code>fetch</code>, <code>performance</code>, <code>node:crypto</code></td></tr>
+<tr><td>Runtime</td><td>Node.js 22+ (24 LTS тоже подходит)</td><td>встроенные <code>fetch</code>, <code>performance</code>, <code>node:crypto</code></td></tr>
 <tr><td>Фреймворк</td><td>NestJS 11 + <code>@nestjs/platform-express</code></td><td>Express 5 под капотом</td></tr>
 <tr><td>Язык</td><td>TypeScript 5 (строгий режим)</td><td>ошибки типов видны до запуска</td></tr>
 <tr><td>ORM</td><td>Prisma 6 (версия зафиксирована)</td><td>схема как код, типизированный клиент, миграции</td></tr>
-<tr><td>БД</td><td>PostgreSQL 16 в Docker</td><td>рабочая <code>helpdesk</code> и тестовая <code>helpdesk_test</code></td></tr>
+<tr><td>БД</td><td>PostgreSQL 17 в Docker</td><td>рабочая <code>helpdesk</code> и тестовая <code>helpdesk_test</code></td></tr>
 <tr><td>Валидация</td><td>class-validator + class-transformer</td><td>DTO и схема env</td></tr>
 <tr><td>Auth</td><td>@nestjs/passport + passport-jwt + @nestjs/jwt, argon2, cookie-parser</td><td>access JWT, refresh в cookie, хэши паролей</td></tr>
 <tr><td>События</td><td>@nestjs/event-emitter</td><td>развязка модулей внутри процесса</td></tr>
@@ -583,7 +583,7 @@ Payload <b>не зашифрован</b> — его прочитает любо�
 что payload не меняли.</p>
 <p>Роль внутри токена — осознанный компромисс: guard не ходит в БД на каждом запросе, но если администратор понизит агента до клиента, старый токен ещё до 15 минут
 будет говорить «AGENT». Короткий срок access-токена — это и есть граница этого компромисса. С WebSocket всё хуже: соединение может жить часами — это задание в
-Production Hell (шаг <a href="#step-10-3">10.3</a>).</p>
+Production Hell (шаг <a href="#step-9-5">9.5</a>).</p>
 <p><b>А почему не сессии?</b> Честно: для SPA на том же домене cookie-сессии (как Laravel Sanctum в SPA-режиме) — отличный и более простой выбор.
 JWT здесь потому, что это стандарт экосистемы Nest, его удобно передавать при WebSocket-handshake и в мобильных клиентах, и потому что именно эту схему
 надо уметь объяснить на собеседовании.</p>
@@ -1188,7 +1188,7 @@ export class HealthService {
 <div class="step" id="step-3-1"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-3-1"></label><span class="num">Шаг 3.1</span>PostgreSQL в Docker — <span class="file">docker-compose.yml</span><a class="anchor" href="#step-3-1">#</a></span><div class="step-body">
 <pre><code>services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_USER: helpdesk
       POSTGRES_PASSWORD: helpdesk
@@ -1224,7 +1224,7 @@ DATABASE_URL!: string;</code></pre>
 Если том <code>pgdata</code> уже существовал (например, вы поднимали контейнер до создания <code>init.sql</code>), скрипт молча пропускается и тестовой базы не будет.
 Лечится <code>docker compose down -v</code> (удаляет том) и повторным <code>up</code>.</p>
 <p>Если на хосте уже работает свой PostgreSQL на 5432, контейнер не сможет занять порт — поменяйте левую часть на <code>"5433:5432"</code> и порт в <code>DATABASE_URL</code>.
-Healthcheck понадобится в шаге <a href="#step-10-2">10.2</a>: сервис миграций будет ждать состояния <code>healthy</code>, а не просто запуска контейнера.</p>
+Healthcheck понадобится в шаге <a href="#step-9-4">9.4</a>: сервис миграций будет ждать состояния <code>healthy</code>, а не просто запуска контейнера.</p>
 </div></details>
 <div class="next-box"><span class="tag">ПЕРЕД ШАГОМ <a href="#step-3-2">3.2</a></span><ul>
 <li>📖 Почитать: <a href="https://www.prisma.io/docs/orm/prisma-migrate/getting-started" target="_blank">Prisma Migrate → Getting started</a> — что делает <code>migrate dev</code>.</li>
@@ -1345,7 +1345,7 @@ model RefreshToken {
 <pre><code>npx prisma migrate dev --name init       # создаёт prisma/migrations/..._init/migration.sql и генерирует клиент
 npx prisma studio                         # веб-интерфейс к БД на :5555</code></pre>
 <div class="why"><b>Зачем:</b> вся модель — в одном файле, и из него генерируются и SQL-миграции<a class="fnref" href="#term-30" id="ref-30" title="к глоссарию">30</a>, и типизированный клиент<a class="fnref" href="#term-31" id="ref-31" title="к глоссарию">31</a>. Поле <code>version</code> пока не используется —
-оно заготовлено для задания про «потерянное обновление» в шаге <a href="#step-10-3">10.3</a>. <code>RefreshToken</code> понадобится в сессии 3.</div>
+оно заготовлено для задания про «потерянное обновление» в шаге <a href="#step-9-5">9.5</a>. <code>RefreshToken</code> понадобится в сессии 3.</div>
 <details class="deep"><summary>🔬 Под капотом: что сделал migrate dev, именованные связи и отличия от Eloquent</summary><div class="deep-body">
 <p><code>migrate dev</code> (1) сравнивает схему с историей миграций, (2) генерирует SQL в новую папку, (3) применяет его, (4) запускает <code>prisma generate</code>.
 Для проверки дрейфа он создаёт временную <b>shadow database</b> — поэтому пользователю БД нужно право <code>CREATE DATABASE</code> (в контейнере оно есть). В проде вместо него
@@ -1823,7 +1823,7 @@ curl -s localhost:3000/api/tickets/1/history | jq '.[] | {field, fromValue, toVa
 но этот запрос идёт <b>мимо транзакции</b>, на другом соединении, и не откатится вместе с остальными.</p>
 <p><b>Потерянное обновление.</b> Два агента одновременно открыли тикет с приоритетом <code>MEDIUM</code>; один ставит <code>HIGH</code>, другой меняет статус. Оба PATCH
 пройдут, но второй затрёт то, что видел первый, если клиент отправляет всю форму. Защита — оптимистическая блокировка<a class="fnref" href="#term-33" id="ref-33" title="к глоссарию">33</a>: клиент присылает <code>version</code>,
-а обновление идёт с условием <code>WHERE id = ? AND version = ?</code>. Реализовать это — задание 1 в шаге <a href="#step-10-3">10.3</a>.</p>
+а обновление идёт с условием <code>WHERE id = ? AND version = ?</code>. Реализовать это — задание 1 в шаге <a href="#step-9-5">9.5</a>.</p>
 </div></details>
 <div class="next-box"><span class="tag">ПЕРЕД СЕССИЕЙ <a href="#session-3">3</a></span><ul>
 <li>📖 Почитать: <a href="https://docs.nestjs.com/security/authentication" target="_blank">NestJS → Authentication</a> — официальный пример с JwtService и guard без Passport — полезно сравнить с нашим вариантом.</li>
@@ -2375,7 +2375,7 @@ curl -s -b jar.txt -X POST localhost:3000/api/auth/refresh | jq               # 
 <p><b>Гонка.</b> Две вкладки одновременно получили 401 и обе вызвали refresh с одним и тем же RT1. Обе прошли проверку <code>row.revokedAt</code> (строка ещё не отозвана),
 обе вошли в транзакцию. <code>updateMany({ where: { id, revokedAt: null } })</code> — это один SQL <code>UPDATE ... WHERE revoked_at IS NULL</code>: PostgreSQL заблокирует строку для первой
 транзакции, вторая дождётся коммита, перечитает строку, условие уже ложно — <code>count = 0</code>. Вторая вкладка получит 401 <code>already used</code>, но семья <b>не</b> будет отозвана:
-это может быть легитимная гонка, а не кража. Полноценное решение (льготный период или single-flight на клиенте) — задание 2 в шаге <a href="#step-10-3">10.3</a>.</p>
+это может быть легитимная гонка, а не кража. Полноценное решение (льготный период или single-flight на клиенте) — задание 2 в шаге <a href="#step-9-5">9.5</a>.</p>
 <p><b>Почему <code>timingSafeEqual</code>.</b> Обычное сравнение строк выходит на первом несовпавшем символе — по времени ответа теоретически можно подбирать хэш побайтно.
 С SHA-256 от 32 случайных байт это скорее гигиена, чем реальная угроза, но привычка правильная.</p>
 <p><b>CSRF.</b> Refresh аутентифицируется cookie, значит к нему применим CSRF: чужой сайт может заставить браузер отправить POST. <code>SameSite=strict</code> запрещает браузеру
@@ -2585,7 +2585,7 @@ C1=$(login customer); C2=$(login customer2); AG=$(login agent)
 curl -s -H "Authorization: Bearer $C1" localhost:3000/api/tickets | jq .total        # 3 — свои
 curl -s -H "Authorization: Bearer $C2" localhost:3000/api/tickets/1 | jq .statusCode # 404 — чужой
 curl -s -X PATCH -H "Authorization: Bearer $C1" -H "$J" -d '{"status":"CLOSED"}' localhost:3000/api/tickets/1 | jq .statusCode  # 403
-curl -s -X PATCH -H "Authorization: Bearer $AG" -H "$J" -d '{"status":"RESOLVED"}' localhost:3000/api/tickets/1 | jq .message   # OPEN → RESOLVED not allowed
+curl -s -X PATCH -H "Authorization: Bearer $AG" -H "$J" -d '{"status":"CLOSED"}' localhost:3000/api/tickets/1 | jq .message    # тикет уже IN_PROGRESS (шаг 4.4): IN_PROGRESS → CLOSED not allowed
 curl -s -X PATCH -H "Authorization: Bearer $AG" -H "$J" -d '{"assigneeId":4}' localhost:3000/api/tickets/1 | jq .message        # Assignee must be an agent...
 curl -s -X DELETE -H "Authorization: Bearer $AG" localhost:3000/api/tickets/3 -o /dev/null -w '%{http_code}\n'                 # 403</code></pre>
 <div class="why"><b>Зачем:</b> <code>RolesGuard</code> отвечает на грубый вопрос «пускать ли эту роль на маршрут», а <code>TicketPolicy</code> — на точный «можно ли этому пользователю
@@ -2804,7 +2804,7 @@ export class EventsDebugListener {
 }</code></pre>
 <pre><code>curl -s -X PATCH -H "Authorization: Bearer $AG" -H "$J" -d '{"priority":"HIGH"}' localhost:3000/api/tickets/1 &gt; /dev/null
 # в логе приложения: [Events] ticket.updated by user #2</code></pre>
-<div class="why"><b>Зачем:</b> <code>TicketsService</code> публикует факт и не знает, кто его слушает. В следующем шаге подпишется WebSocket, в шаге <a href="#step-10-1">10.1</a> — аудит,
+<div class="why"><b>Зачем:</b> <code>TicketsService</code> публикует факт и не знает, кто его слушает. В следующем шаге подпишется WebSocket, в шаге <a href="#step-9-3">9.3</a> — аудит,
 и сервис тикетов при этом не изменится. Поле <code>type</code> в каждом событии позволяет универсальным слушателям (<code>'**'</code>) понимать, что пришло.</div>
 <details class="deep"><summary>🔬 Под капотом: emit синхронный, почему после коммита и что с ошибками слушателей</summary><div class="deep-body">
 <p><code>emit()</code> в EventEmitter2 вызывает всех слушателей <b>синхронно, прямо внутри вызова</b>, и возвращается после них. Если слушатель медленный,
@@ -2933,6 +2933,7 @@ export class RealtimeListener {
     target.emit('comment:created', e.comment);
   }
 }</code></pre>
+<p>Точка в имени (<code>ticket.updated</code>) — доменное событие <code>EventEmitter2</code> внутри процесса; двоеточие (<code>ticket:updated</code>) — то же самое, но уже наружу, в сокет Socket.IO. <span class="file">RealtimeListener</span> как раз мост между ними: слушает первое, шлёт второе.</p>
 <p><span class="file">src/realtime/realtime.module.ts</span>: <code>imports: [AuthModule, TicketsModule]</code>, <code>providers: [TicketsGateway, RealtimeListener]</code>.
 Тестовый клиент — <span class="file">scripts/ws-client.mjs</span>:</p>
 <pre><code>import { io } from 'socket.io-client';
@@ -2986,7 +2987,7 @@ curl -s -H "Authorization: Bearer $AG" -H "$J" -d '{"body":"Клиент ста�
 <p><b>CORS <code>origin: true</code></b> отражает любой Origin. Для лабы допустимо: сокет аутентифицируется токеном, а не cookie. В проде список источников задают через
 кастомный <code>IoAdapter</code>, читая <code>ConfigService</code> (опции декоратора вычисляются при загрузке файла, до того как конфиг готов).</p>
 <p><b>Протухший токен.</b> Access-токен проверен при подключении. Через 15 минут он истёк, а соединение живо и получает события. Понизили агента до клиента —
-сокет остаётся в комнате <code>agents</code> до переподключения. Задание 3 в шаге <a href="#step-10-3">10.3</a>.</p>
+сокет остаётся в комнате <code>agents</code> до переподключения. Задание 3 в шаге <a href="#step-9-5">9.5</a>.</p>
 </div></details>
 <div class="next-box"><span class="tag">ПЕРЕД ШАГОМ <a href="#step-8-1">8.1</a></span><ul>
 <li>📖 Почитать: <a href="https://docs.nestjs.com/middleware" target="_blank">NestJS → Middleware</a> — функциональные и классовые middleware, forRoutes.</li>
@@ -3082,7 +3083,7 @@ Interceptor видит только pipes + обработчик — разни�
 окончательный. (<code>close</code> срабатывает и при обрыве клиентом — полезно логировать отдельно.)</p>
 <p><b>Таймаут не отменяет работу.</b> <code>timeout()</code> отписывается от Observable и возвращает клиенту 408, но промис обработчика продолжает выполняться: запрос в БД доработает,
 транзакция закоммитится. В эксперименте через 12 с в логе всё равно появится завершение. Настоящая отмена требует <code>AbortController</code>, передаваемого вниз, и таймаутов на
-уровне БД (<code>statement_timeout</code>). Задание 6 в Production Hell.</p>
+уровне БД (<code>statement_timeout</code>). Задание 5 в Production Hell.</p>
 <p><b>Wildcard.</b> Nest 11 работает на Express 5, где синтаксис путей изменился: «все маршруты» записываются как <code>{*splat}</code> (именованный wildcard, фигурные скобки — «включая корень»).
 В Nest 10 писали <code>forRoutes('*')</code>; Nest 11 такую запись конвертирует с предупреждением.</p>
 </div></details>
@@ -3224,7 +3225,7 @@ helmet ставит набор защитных заголовков. Rate limit
 используют Redis-хранилище.</p>
 <p><b>IP за прокси.</b> Throttler считает по IP. За Traefik или Nginx все запросы приходят с IP прокси — один клиент исчерпает лимит для всех. Нужно
 <code>app.getHttpAdapter().getInstance().set('trust proxy', 1)</code>, тогда Express возьмёт реальный IP из <code>X-Forwarded-For</code>. И ещё: лимит по IP легко обойти пулом адресов —
-для логина надёжнее ключ «IP + email» (задание 7 в Production Hell).</p>
+для логина надёжнее ключ «IP + email» (задание 6 в Production Hell).</p>
 </div></details>
 <div class="next-box"><span class="tag">ПЕРЕД СЕССИЕЙ <a href="#session-5">5</a></span><ul>
 <li>📖 Почитать: <a href="https://docs.nestjs.com/fundamentals/testing" target="_blank">NestJS → Testing</a> — Test.createTestingModule, overrideProvider, e2e с supertest.</li>
@@ -3557,12 +3558,12 @@ describe('Tickets (e2e)', () =&gt; {
 <p><code>--runInBand</code> запускает файлы последовательно: они делят одну БД, и параллельный <code>TRUNCATE</code> ломал бы соседей. Альтернатива для больших наборов — своя
 схема или база на каждый воркер Jest.</p>
 </div></details>
-<div class="next-box"><span class="tag">ПЕРЕД ШАГОМ <a href="#step-10-1">10.1</a></span><ul>
+<div class="next-box"><span class="tag">ПЕРЕД ШАГОМ <a href="#step-9-3">9.3</a></span><ul>
 <li>📖 Почитать: <a href="https://docs.nestjs.com/fundamentals/dynamic-modules" target="_blank">NestJS → Dynamic modules</a> — особенно раздел про ConfigurableModuleBuilder.</li>
 </ul></div>
 </div></div>
 
-<div class="step" id="step-10-1"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-10-1"></label><span class="num">Шаг 10.1</span>Свой динамический модуль — <span class="file">src/audit/</span><a class="anchor" href="#step-10-1">#</a></span><div class="step-body">
+<div class="step" id="step-9-3"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-9-3"></label><span class="num">Шаг 9.3</span>Свой динамический модуль — <span class="file">src/audit/</span><a class="anchor" href="#step-9-3">#</a></span><div class="step-body">
 <p><span class="file">src/audit/audit.module-definition.ts</span></p>
 <pre><code>import { ConfigurableModuleBuilder } from '@nestjs/common';
 
@@ -3663,13 +3664,13 @@ export class AuditModule extends ConfigurableModuleClass {}</code></pre>
 (как <code>TypeOrmModule.forFeature([Ticket])</code>); <code>register</code> — каждый раз новый экземпляр с новой конфигурацией. Аналог в Laravel — пакет с ServiceProvider,
 который делает <code>mergeConfigFrom</code> и регистрирует синглтоны из конфига.</p>
 </div></details>
-<div class="next-box"><span class="tag">ПЕРЕД ШАГОМ <a href="#step-10-2">10.2</a></span><ul>
+<div class="next-box"><span class="tag">ПЕРЕД ШАГОМ <a href="#step-9-4">9.4</a></span><ul>
 <li>📖 Почитать: <a href="https://docs.nestjs.com/recipes/terminus" target="_blank">NestJS → Recipes → Health checks (Terminus)</a></li>
 <li>📖 Почитать: <a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/" target="_blank">Kubernetes → Liveness, Readiness and Startup Probes</a> — зачем два разных эндпоинта.</li>
 </ul></div>
 </div></div>
 
-<div class="step" id="step-10-2"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-10-2"></label><span class="num">Шаг 10.2</span>Health-чеки, graceful shutdown и Docker-образ<a class="anchor" href="#step-10-2">#</a></span><div class="step-body">
+<div class="step" id="step-9-4"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-9-4"></label><span class="num">Шаг 9.4</span>Health-чеки, graceful shutdown и Docker-образ<a class="anchor" href="#step-9-4">#</a></span><div class="step-body">
 <pre><code>npm i @nestjs/terminus</code></pre>
 <p><span class="file">src/health/health.controller.ts</span> — финальная версия (в <code>HealthModule</code> добавьте <code>imports: [TerminusModule]</code>):</p>
 <pre><code>import { Controller, Get } from '@nestjs/common';
@@ -3796,12 +3797,12 @@ HTTP-сервер перестаёт принимать соединения и 
 <p><b>Prisma в образе.</b> <code>prisma generate</code> кладёт клиент и бинарник движка в <code>node_modules/.prisma</code>, поэтому его копируют из стадии сборки. Сборка и рантайм на одном базовом
 образе (alpine + openssl), чтобы движок подходил к системе.</p>
 </div></details>
-<div class="next-box"><span class="tag">ПЕРЕД ШАГОМ <a href="#step-10-3">10.3</a></span><ul>
+<div class="next-box"><span class="tag">ПЕРЕД ШАГОМ <a href="#step-9-5">9.5</a></span><ul>
 <li>Перечитайте блоки «Под капотом» шагов <a href="#step-4-4">4.4</a>, <a href="#step-6-1">6.1</a>, <a href="#step-7-3">7.3</a> и <a href="#step-8-1">8.1</a> — задания ниже растут из них.</li>
 </ul></div>
 </div></div>
 
-<div class="step" id="step-10-3"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-10-3"></label><span class="num">Шаг 10.3</span>Production Hell — задания без подсказок<a class="anchor" href="#step-10-3">#</a></span><div class="step-body">
+<div class="step" id="step-9-5"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-9-5"></label><span class="num">Шаг 9.5</span>Production Hell — задания без подсказок<a class="anchor" href="#step-9-5">#</a></span><div class="step-body">
 <table>
 <tr><th>#</th><th>Что ломаем</th><th>Как воспроизвести</th><th>Что должно быть после вашего фикса</th></tr>
 <tr><td>1</td><td>Потерянное обновление</td><td>скрипт: два агента читают тикет с <code>version=3</code> и одновременно шлют PATCH (<code>Promise.all</code>)</td><td>клиент присылает <code>version</code>; обновление через <code>updateMany({ where: { id, version } })</code>; второй получает 409</td></tr>
@@ -3836,9 +3837,9 @@ HTTP-сервер перестаёт принимать соединения и 
 <tr><td>Авторизация</td><td>RBAC, RolesGuard, Reflector, политика владения, 404 против 403, граф статусов</td><td><a href="#step-6-2">6.2</a>, <a href="#step-7-1">7.1</a></td></tr>
 <tr><td>События и real-time</td><td>EventEmitter2, события после коммита, Socket.IO gateway, handshake-auth, rooms, acks, WsException</td><td><a href="#step-7-2">7.2</a>, <a href="#step-7-3">7.3</a>, <a href="#sec-8">8</a></td></tr>
 <tr><td>Сквозная функциональность</td><td>middleware, interceptors и RxJS, request id, таймауты, Swagger + CLI-плагин, CORS, helmet, throttling</td><td><a href="#step-8-1">8.1</a>, <a href="#step-8-2">8.2</a>, <a href="#step-8-3">8.3</a>, <a href="#sec-7">7</a></td></tr>
-<tr><td>Архитектура</td><td>тонкие контроллеры, инверсия зависимостей через события, динамические модули, ConfigurableModuleBuilder</td><td><a href="#sec-3">3</a>, <a href="#step-10-1">10.1</a></td></tr>
+<tr><td>Архитектура</td><td>тонкие контроллеры, инверсия зависимостей через события, динамические модули, ConfigurableModuleBuilder</td><td><a href="#sec-3">3</a>, <a href="#step-9-3">9.3</a></td></tr>
 <tr><td>Тестирование</td><td>Test.createTestingModule, моки, ExecutionContext-стаб, e2e на отдельной БД, общий configureApp</td><td><a href="#step-9-1">9.1</a>, <a href="#step-9-2">9.2</a></td></tr>
-<tr><td>Эксплуатация</td><td>liveness/readiness, enableShutdownHooks, PID 1 и сигналы, многостадийный Dockerfile, миграции отдельным шагом</td><td><a href="#step-10-2">10.2</a>, <a href="#step-10-3">10.3</a></td></tr>
+<tr><td>Эксплуатация</td><td>liveness/readiness, enableShutdownHooks, PID 1 и сигналы, многостадийный Dockerfile, миграции отдельным шагом</td><td><a href="#step-9-4">9.4</a>, <a href="#step-9-5">9.5</a></td></tr>
 </table>
 
 <h2 id="sec-11"><label class="done-label" title="Отметить раздел пройденным"><input type="checkbox" class="done" data-key="sec-11"></label>11. Глоссарий терминов <a class="anchor" href="#sec-11">#</a></h2>
