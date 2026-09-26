@@ -31,4 +31,4 @@ NestJS 11 + TypeScript (strict), Prisma 6 + PostgreSQL 17, class-validator/class
 
 ---
 
-Часть сборного репозитория лабораторных работ — [submodule-group-lab](https://github.com/meeymirita/submodule-group-lab).
+Часть сборного репозитория лабораторных работ — [anitech-performance](https://github.com/meeymirita/anitech-performance).
