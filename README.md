@@ -17,7 +17,7 @@ NestJS 11 + TypeScript (strict), Prisma 7 + PostgreSQL 18, class-validator/class
 
 ## Формат
 
-Методичка [`nestjs.html`](nestjs.html) — открывается в браузере, прогресс по чекбоксам сохраняется локально.
+Методичка [`nestjs.html`](nestjs.html) ([открыть на сайте](https://anitech.meeymirita.ru/works/nestjs.html)) — открывается в браузере, прогресс по чекбоксам сохраняется локально.
 
 ## Что внутри (5 сессий)
 
@@ -28,6 +28,10 @@ NestJS 11 + TypeScript (strict), Prisma 7 + PostgreSQL 18, class-validator/class
 - **Сессия 5** — unit- и e2e-тесты, свой динамический модуль, health-чеки и graceful shutdown, Docker, "Production Hell" — финальный сценарий без подсказок
 
 Разделы 1–8 методички — теория (разбор задачи, как NestJS устроен внутри, итоговая архитектура, стек и структура, access/refresh-аутентификация, сценарий жизненного цикла тикета, Pipes/Guards/Interceptors/Filters, real-time и доменные события), раздел 9 — пять сессий заданий, разделы 10–13 — чек-лист, глоссарий, вопросы для собеседования, что дальше.
+
+## Лицензия и авторство
+
+Код — MIT, тексты — CC BY 4.0, обложки и иллюстрации не покрыты (см. [LICENSE](LICENSE)). Кто что сделал: [NOTICE](NOTICE).
 
 ---
 
