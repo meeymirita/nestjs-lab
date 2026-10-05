@@ -1,6 +1,6 @@
 # NestJS Lab — Helpdesk API с нуля
 
-![NestJS](nest.png)
+![NestJS](https://meeymirita-files.storage.yandexcloud.net/nestjs/nest.png)
 
 > **24.09.2026 — методичка вычитана и исправлена.** Что найдено и что поправлено — в [fixes/backend/nestjs.md](https://github.com/meeymirita/lab-fixes/blob/main/backend/nestjs.md) репозитория `lab-fixes`.
 
