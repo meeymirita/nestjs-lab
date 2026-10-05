@@ -17,7 +17,7 @@ NestJS 11 + TypeScript (strict), Prisma 7 + PostgreSQL 18, class-validator/class
 
 ## Формат
 
-Методичка [`NestJS_Lab_Plan.html`](NestJS_Lab_Plan.html) — открывается в браузере, прогресс по чекбоксам сохраняется локально.
+Методичка [`nestjs.html`](nestjs.html) — открывается в браузере, прогресс по чекбоксам сохраняется локально.
 
 ## Что внутри (5 сессий)
 
